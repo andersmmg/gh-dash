@@ -258,7 +258,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 <Icon name={showInactive ? 'chevron' : 'chevronRight'} />
                 {showInactive ? 'Hide' : 'Show'} {inactive.length} inactive
               </button>
-              {showInactive && inactive.map(item)}
+              {(showInactive ? inactive : inactive.filter((r) => selected.has(r.key))).map(item)}
             </>
           )}
         </>
