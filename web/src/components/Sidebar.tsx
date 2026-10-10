@@ -74,6 +74,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   const [filter, setFilter] = useState('');
   const [showInactive, setShowInactive] = useState(false);
+  /** The row last picked without Shift: the end a Shift-click keeps the range anchored to. */
+  const [anchor, setAnchor] = useState<string | null>(null);
 
   // The context's repos: the sidebar lists, selects and counts only these (a set made here holds only these).
   const everything = repos.data ?? [];
@@ -105,6 +107,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const inactiveShown = showInactive
     ? inactive
     : selInactive.length <= inactiveLimit ? selInactive : [];
+  /** The rows as displayed; a Shift-click selects the range between anchors in this order. */
+  const visible = [...pinned, ...main, ...inactiveShown];
   const nSel = shown.filter((r) => selected.has(r.key)).length;
   /** The selection as the lists see it: the visibility and ownership filters apply on top of `repos=`. */
   const inScope = all.filter((r) => selected.has(r.key) && passesRepoFilters(r, s)).map((r) => r.key);
@@ -117,9 +121,29 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     set({ repos: isDefault ? null : list });
   };
   const toggle = (key: string) => {
+    setAnchor(key);
     const next = new Set(selected);
     if (next.has(key)) next.delete(key); else next.add(key);
     select(next);
+  };
+  /**
+   * Shift-click: the selection becomes the displayed rows between the anchor and this one; with
+   * Ctrl/Cmd held they instead join or leave the current selection, going whichever way the
+   * clicked row would toggle, so rows outside the range are kept. The anchor survives Shift (a
+   * repeated Shift-click moves the range's other end). False when either end is not on screen,
+   * so the caller falls back.
+   */
+  const selectRange = (to: string, keepOthers: boolean): boolean => {
+    const from = anchor === null ? -1 : visible.findIndex((r) => r.key === anchor);
+    const end = visible.findIndex((r) => r.key === to);
+    if (from < 0 || end < 0) return false;
+    const range = visible.slice(Math.min(from, end), Math.max(from, end) + 1).map((r) => r.key);
+    if (!keepOthers) { select(range); return true; }
+    const next = new Set(selected);
+    const joining = !next.has(to);
+    for (const key of range) { if (joining) next.add(key); else next.delete(key); }
+    select(next);
+    return true;
   };
 
   const sameSel = (keys: string[]) => {
@@ -194,7 +218,16 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           aria-label={`Filter to ${name}`}
           aria-describedby={describedBy}
           title={`Filter to ${name}${r.description ? ` · ${r.description}` : ''}`}
-          onClick={() => { set({ repos: [r.key], ...(onNavigate ? { pr: null, diff: null } : {}) }); onNavigate?.(); }}
+          onClick={(e) => {
+            // Ctrl/Cmd toggles the row like its checkbox; Shift selects the range from the anchor,
+            // and with Ctrl/Cmd too that range follows the clicked row's toggle instead of
+            // replacing the selection.
+            if (e.shiftKey && selectRange(r.key, e.ctrlKey || e.metaKey)) return;
+            if (e.ctrlKey || e.metaKey) { toggle(r.key); return; }
+            setAnchor(r.key);
+            set({ repos: [r.key], ...(onNavigate ? { pr: null, diff: null } : {}) });
+            onNavigate?.();
+          }}
         >
           <span className="repo-name">
             {badges && <SourceBadge host={r.source} />}

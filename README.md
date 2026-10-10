@@ -117,7 +117,8 @@ looking at; clicked again on its page, it goes to the list.
 The sidebar decides which repositories every tab shows.
 
 - Click a repository to focus on it, or use the checkboxes to build a selection. Clicking a
-  repository's name anywhere in a list does the same.
+  repository's name anywhere in a list does the same. In the sidebar, Ctrl- or Cmd-click a row to
+  toggle it like its checkbox, and Shift-click to select a range.
 - **All** goes back to the default: everything except archived, hidden and forked repositories.
   **Hide from default selection**, in a repository's menu, leaves one out. **Show inactive** lets
   you pick those too; while that section is collapsed, your selected inactive repositories are
