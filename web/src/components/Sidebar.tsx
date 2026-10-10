@@ -197,7 +197,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           {r.unavailable && <span className="arch" title={r.unavailable.reason}><Icon name="alert" />unavailable</span>}
           {syncing && <span className="arch">syncing…</span>}
           {!r.unavailable && !syncing && r.isArchived && <span className="arch">archived</span>}
-          {!r.unavailable && !syncing && !r.isArchived && r.hidden && <span className="arch">hidden</span>}
+          {!r.unavailable && !syncing && !r.isArchived && r.hidden && <span className="arch" title="Hidden from the default selection"><Icon name="eyeOff" /></span>}
           {!r.unavailable && !syncing && !r.isArchived && !r.hidden && r.isFork && <span className="arch">fork</span>}
           {(r.stats.openPrs > 0 || r.stats.openIssues > 0) && <span className="repo-counts" aria-hidden="true">
             {r.stats.openPrs > 0 && <span title={openPrs}>
