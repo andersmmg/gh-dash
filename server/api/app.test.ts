@@ -1007,6 +1007,21 @@ describe('GH_DASH_MY_EMAILS', () => {
   });
 });
 
+describe('settings', () => {
+  it('persists the sidebar collapsed-inactive limit within its bounds', async () => {
+    const app = makeApp();
+    const patch = (body: object) =>
+      app.request('/api/v1/settings', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    expect(await (await app.request('/api/v1/settings')).json()).toMatchObject({ collapsedInactiveLimit: 3 });
+    // 0 is allowed: never list selected inactive repositories while the section is collapsed.
+    expect(await (await patch({ collapsedInactiveLimit: 0 })).json()).toMatchObject({ collapsedInactiveLimit: 0 });
+    expect(await (await app.request('/api/v1/settings')).json()).toMatchObject({ collapsedInactiveLimit: 0 });
+    expect((await patch({ collapsedInactiveLimit: -1 })).status).toBe(400);
+    expect((await patch({ collapsedInactiveLimit: 1.5 })).status).toBe(400);
+    expect((await patch({ collapsedInactiveLimit: 51 })).status).toBe(400);
+  });
+});
+
 describe('"me" per source', () => {
   // The seed's GitHub viewer is alice; seedGitLab adds gitlab.example.com, claimed by bob (address bob@corp.example).
   const range = 'from=2026-09-20&to=2026-09-26&tz=UTC';

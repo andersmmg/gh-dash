@@ -84,7 +84,7 @@ test('email tokens retain delimiter, paste, blur, removal, and saved payload sem
   await page.route('**/api/v1/settings', async (route) => {
     if (route.request().method() !== 'PATCH') { await route.fallback(); return; }
     saved = route.request().postDataJSON();
-    await route.fulfill({ json: { syncIntervalMinutes: 30, backfillDays: 365, myEmails: [], includeForks: false, diffCacheMb: 200, ...saved as object } });
+    await route.fulfill({ json: { syncIntervalMinutes: 30, backfillDays: 365, myEmails: [], includeForks: false, collapsedInactiveLimit: 3, diffCacheMb: 200, ...saved as object } });
   });
   await page.goto('/settings?source=github.com');
   const input = page.getByRole('textbox', { name: 'Add commit email' });

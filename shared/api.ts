@@ -260,9 +260,17 @@ export interface Settings {
    */
   myEmailsFromEnv?: string[];
   includeForks: boolean; // default false: forks are synced but excluded from the default selection
+  /**
+   * How many selected inactive repositories the sidebar still lists while its inactive section is
+   * collapsed, inclusive (default 3; allowed 0..50). Above the limit the section just collapses.
+   */
+  collapsedInactiveLimit: number;
   /** Size cap for the on-disk diff cache in MB (default 200; allowed 10..10000). Least recently viewed entries go first. */
   diffCacheMb: number;
 }
+
+/** Default for `Settings.collapsedInactiveLimit` (used before settings load). */
+export const DEFAULT_COLLAPSED_INACTIVE_LIMIT = 3;
 
 /**
  * Where the server's GitHub token currently comes from:

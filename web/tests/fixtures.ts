@@ -67,7 +67,7 @@ export const test = base.extend<{ mockApi: void }>({
       else if (path === 'me') body = { ...actor, tokenSource: 'env' };
       else if (path === 'account') body = { source: 'env', choice: 'auto', locked: true, login: 'owner', name: actor.name, avatarUrl: null, dbLogin: 'owner', mismatch: false, kind: 'fine-grained', expiresAt: null, scopes: null, repos: { total: 1, private: 0 }, error: null, gh: { available: false, path: null, login: null }, tokenFile: null, checkedAt: at };
       else if (path === 'instance') body = { version: 'browser-fixture', desktop: false, apiUrl: 'http://127.0.0.1:4187', mcpUrl: null, auth: { password: false, apiKey: false }, configPath: null, settings: { sources: [], ...Object.fromEntries(Object.entries({ host: '127.0.0.1', port: 4187, dbPath: 'synthetic', cacheDbPath: 'synthetic', sync: false, allowedHosts: [], tokenFile: null, defaultTz: 'UTC', glabPath: null }).map(([key, value]) => [key, { value, source: 'default' }])) } };
-      else if (path === 'settings') body = { syncIntervalMinutes: 30, backfillDays: 365, myEmails: [], includeForks: false, diffCacheMb: 200 };
+      else if (path === 'settings') body = { syncIntervalMinutes: 30, backfillDays: 365, myEmails: [], includeForks: false, collapsedInactiveLimit: 3, diffCacheMb: 200 };
       else if (['sets', 'views', 'agents'].includes(path) || path.endsWith('/threads')) body = { items: [] };
       else if (path === 'threads') body = { ...empty, counts: { open: 0, resolved: 0 } };
       else if (path === 'prs') {

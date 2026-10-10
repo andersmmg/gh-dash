@@ -24,12 +24,13 @@ function ApiButton({ href, icon, children }: { href: string | null; icon: IconNa
 }
 
 /** The editable part of Settings: what the form holds and what PATCH sends (never myEmailsFromEnv). */
-type SettingsForm = Pick<Settings, 'syncIntervalMinutes' | 'backfillDays' | 'myEmails' | 'includeForks'>;
+type SettingsForm = Pick<Settings, 'syncIntervalMinutes' | 'backfillDays' | 'myEmails' | 'includeForks' | 'collapsedInactiveLimit'>;
 const editable = (x: Settings): SettingsForm => ({
   syncIntervalMinutes: x.syncIntervalMinutes,
   backfillDays: x.backfillDays,
   myEmails: x.myEmails,
   includeForks: x.includeForks,
+  collapsedInactiveLimit: x.collapsedInactiveLimit,
 });
 
 /** Emails from the server's GH_DASH_MY_EMAILS: shown as read-only chips, not part of the form. */
@@ -149,9 +150,10 @@ export function SettingsView() {
   const dirty = !!form && !!settings.data && JSON.stringify(form) !== JSON.stringify(editable(settings.data));
   const intervalOk = !!form && Number.isInteger(form.syncIntervalMinutes) && form.syncIntervalMinutes >= 5 && form.syncIntervalMinutes <= 1440;
   const backfillOk = !!form && Number.isInteger(form.backfillDays) && form.backfillDays >= 1;
+  const inactiveLimitOk = !!form && Number.isInteger(form.collapsedInactiveLimit) && form.collapsedInactiveLimit >= 0 && form.collapsedInactiveLimit <= 50;
 
   const submit = () => {
-    if (!form || !intervalOk || !backfillOk) return;
+    if (!form || !intervalOk || !backfillOk || !inactiveLimitOk) return;
     save.mutate(form, {
       onSuccess: (s) => { setForm(editable(s)); toast('Settings saved'); },
       onError: (e) => toast(`Couldn't save: ${(e as Error).message}`, { tone: 'error' }),
@@ -240,8 +242,15 @@ export function SettingsView() {
                   <span className="set-l">Include forks<small>Forks are always synced; this adds them to the default selection.</small></span>
                   <span className="set-c"><Switch checked={form.includeForks} onChange={(e) => setForm({ ...form, includeForks: e.target.checked })} /></span>
                 </label>
+                <label className="set-row">
+                  <span className="set-l">Sidebar inactive limit<small>Selected inactive repositories still listed while the sidebar’s inactive section is collapsed, up to this many (0–50); 0 shows none.</small></span>
+                  <span className="set-c">
+                    <input className="wb-input num-in" aria-invalid={!inactiveLimitOk || undefined} type="number" min={0} max={50} step={1} value={form.collapsedInactiveLimit}
+                      onChange={(e) => setForm({ ...form, collapsedInactiveLimit: Math.round(Number(e.target.value)) })} />
+                  </span>
+                </label>
                 <div className="set-actions">
-                  <button type="submit" className="wb-btn wb-btn--primary" disabled={!dirty || !intervalOk || !backfillOk || save.isPending}>Save changes</button>
+                  <button type="submit" className="wb-btn wb-btn--primary" disabled={!dirty || !intervalOk || !backfillOk || !inactiveLimitOk || save.isPending}>Save changes</button>
                   <button type="button" className="wb-btn" disabled={!dirty} onClick={() => setForm(settings.data ? editable(settings.data) : null)}>Reset</button>
                 </div>
               </form>

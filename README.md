@@ -120,8 +120,8 @@ The sidebar decides which repositories every tab shows.
   repository's name anywhere in a list does the same.
 - **All** goes back to the default: everything except archived, hidden and forked repositories.
   **Hide from default selection**, in a repository's menu, leaves one out. **Show inactive** lets
-  you pick those too; while that section is collapsed, inactive repositories you have selected stay
-  visible.
+  you pick those too; while that section is collapsed, your selected inactive repositories are
+  still listed while there are no more than the limit in Settings (default 3).
 - **All / Mine / Others** shows every repository, the ones you own, or the ones you added. The
   filter button next to the search box narrows them by visibility.
 - **+** adds a repository: pick one your token can read, or paste `owner/name`, a GitLab

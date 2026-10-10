@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Settings } from '../../shared/api';
+import { DEFAULT_COLLAPSED_INACTIVE_LIMIT, type Settings } from '../../shared/api';
 import type { Db } from './db';
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -7,6 +7,7 @@ export const DEFAULT_SETTINGS: Settings = {
   backfillDays: 365,
   myEmails: [],
   includeForks: false,
+  collapsedInactiveLimit: DEFAULT_COLLAPSED_INACTIVE_LIMIT,
   diffCacheMb: 200,
 };
 
@@ -19,6 +20,7 @@ export const settingsPatchSchema = z
       .max(50)
       .transform((emails) => [...new Set(emails)]),
     includeForks: z.boolean(),
+    collapsedInactiveLimit: z.number().int().min(0).max(50),
     diffCacheMb: z.number().int().min(10).max(10000),
   })
   .partial()

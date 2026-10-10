@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Ownership, Repo, VisibilityFilter } from '../../../shared/api';
+import { DEFAULT_COLLAPSED_INACTIVE_LIMIT } from '../../../shared/api';
 import { repoProvider } from '../../../shared/provider';
 import {
   defaultScope,
@@ -80,6 +81,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const scope = useMemo(() => defaultScope(all, settings.data), [all, settings.data]);
   const selected = useMemo(() => new Set(s.repos ?? scope), [s.repos, scope]);
   const includeForks = !!settings.data?.includeForks;
+  /** The collapsed section's list limit: the setting, or its default while settings load. */
+  const inactiveLimit = settings.data?.collapsedInactiveLimit ?? DEFAULT_COLLAPSED_INACTIVE_LIMIT;
 
   const fq = filter.trim().toLowerCase();
   const visCounts = useMemo(() => {
@@ -97,6 +100,11 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
     ((!!r.lastActivityAt && Date.parse(r.lastActivityAt) >= cutoff) || r.stats.openPrs > 0 || r.stats.openIssues > 0);
   const main = fq ? rest : rest.filter(isMain);
   const inactive = fq ? [] : rest.filter((r) => !isMain(r));
+  /** Selected while inactive: still listed when the section is collapsed, up to Settings.collapsedInactiveLimit of them. */
+  const selInactive = inactive.filter((r) => selected.has(r.key));
+  const inactiveShown = showInactive
+    ? inactive
+    : selInactive.length <= inactiveLimit ? selInactive : [];
   const nSel = shown.filter((r) => selected.has(r.key)).length;
   /** The selection as the lists see it: the visibility and ownership filters apply on top of `repos=`. */
   const inScope = all.filter((r) => selected.has(r.key) && passesRepoFilters(r, s)).map((r) => r.key);
@@ -258,7 +266,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                 <Icon name={showInactive ? 'chevron' : 'chevronRight'} />
                 {showInactive ? 'Hide' : 'Show'} {inactive.length} inactive
               </button>
-              {(showInactive ? inactive : inactive.filter((r) => selected.has(r.key))).map(item)}
+              {inactiveShown.map(item)}
             </>
           )}
         </>
